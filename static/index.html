@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="RailCascade Mini V2 - Interactive Railway Traffic Management RL Environment Visualization">
+    <title>RailCascade Mini V2 - Railway Dispatcher</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header id="app-header">
+        <div class="header-left">
+            <div class="logo">
+                <span class="logo-icon">&#9668;&#9658;</span>
+                <h1>RailCascade<span class="accent">Mini</span></h1>
+            </div>
+            <span class="version-badge">V2</span>
+        </div>
+        <div class="header-right">
+            <div class="status-indicator" id="status-indicator">
+                <span class="status-dot"></span>
+                <span class="status-text">Ready</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Layout -->
+    <main id="app-main">
+        <!-- Left Panel: Controls -->
+        <aside id="control-panel" class="glass-panel">
+            <h2 class="panel-title">Control Center</h2>
+
+            <!-- Task Selector -->
+            <div class="control-group">
+                <label for="task-select">Difficulty</label>
+                <div class="select-wrapper">
+                    <select id="task-select">
+                        <option value="easy">Easy (3 trains)</option>
+                        <option value="medium">Medium (6 trains)</option>
+                        <option value="hard">Hard (8 trains)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="control-group">
+                <label>Actions</label>
+                <div class="btn-grid">
+                    <button id="btn-reset" class="btn btn-primary" title="Reset environment">
+                        <span class="btn-icon">&#8634;</span> Reset
+                    </button>
+                    <button id="btn-step" class="btn btn-secondary" disabled title="Step one timestep">
+                        <span class="btn-icon">&#9654;</span> Step
+                    </button>
+                    <button id="btn-auto" class="btn btn-accent" disabled title="Auto-play episode">
+                        <span class="btn-icon">&#9654;&#9654;</span> Auto
+                    </button>
+                    <button id="btn-pause" class="btn btn-warning" disabled title="Pause auto-play" style="display:none;">
+                        <span class="btn-icon">&#10074;&#10074;</span> Pause
+                    </button>
+                </div>
+            </div>
+
+            <!-- Speed Control -->
+            <div class="control-group">
+                <label for="speed-slider">Speed: <span id="speed-label">500ms</span></label>
+                <input type="range" id="speed-slider" min="100" max="2000" step="100" value="500">
+            </div>
+
+            <!-- Score Display -->
+            <div class="control-group score-display">
+                <label>Score</label>
+                <div class="score-value" id="score-value">--</div>
+                <div class="score-bar">
+                    <div class="score-fill" id="score-fill" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="control-group stats-grid">
+                <div class="stat-item">
+                    <span class="stat-label">Timestep</span>
+                    <span class="stat-value" id="stat-timestep">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Max Steps</span>
+                    <span class="stat-value" id="stat-maxsteps">--</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Total Delay</span>
+                    <span class="stat-value" id="stat-delay">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Conflicts</span>
+                    <span class="stat-value" id="stat-conflicts">0</span>
+                </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="control-group">
+                <label>Episode Progress</label>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+                    <span class="progress-text" id="progress-text">0%</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Center: Canvas -->
+        <section id="canvas-section">
+            <canvas id="graph-canvas"></canvas>
+            <div id="canvas-overlay" class="canvas-overlay">
+                <p>Press <strong>Reset</strong> to start</p>
+            </div>
+        </section>
+
+        <!-- Right Panel: Train Status -->
+        <aside id="status-panel" class="glass-panel">
+            <h2 class="panel-title">Train Status</h2>
+            <div id="train-table-container">
+                <table id="train-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Position</th>
+                            <th>Delay</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="train-table-body">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <h2 class="panel-title" style="margin-top: 24px;">Event Log</h2>
+            <div id="event-log" class="event-log">
+                <div class="event-entry event-info">System ready. Select a task and press Reset.</div>
+            </div>
+        </aside>
+    </main>
+
+    <!-- Bottom: Step History Timeline -->
+    <footer id="timeline-panel" class="glass-panel">
+        <h2 class="panel-title">Step History</h2>
+        <div id="timeline-container">
+            <div id="timeline-bars"></div>
+        </div>
+    </footer>
+
+    <script src="/app.js"></script>
+</body>
+</html>

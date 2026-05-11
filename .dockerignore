@@ -1,0 +1,22 @@
+# Secrets - never bake into Docker image
+.env
+*.env
+
+# Git internals
+.git
+.gitignore
+.gitattributes
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Dev/test files
+test_*.py
+
+# Docs (optional, saves image size)
+README.md
+PROJECT_VISION.md
+VISION.md
+LICENSE

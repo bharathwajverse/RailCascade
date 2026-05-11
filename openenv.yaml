@@ -1,0 +1,217 @@
+name: railcascade-mini
+version: 2.1.0
+description: >
+  Deterministic railway traffic management RL environment.
+  10-node directed graph with 14 edges, 3 alternate corridors,
+  edge-based conflict resolution, cascade delay propagation,
+  and dynamic mid-episode edge blocking for adaptive difficulty.
+
+domain: transportation
+deterministic: true
+
+huggingface_space_url: "https://huggingface.co/spaces/IrfanCodes/RailCascadeMiniV2"
+
+inference:
+  entry_point: inference.py
+  auth_env_var: HF_TOKEN
+  model_env_var: MODEL_NAME
+  base_url_env_var: API_BASE_URL
+  default_model: gpt-4o-mini
+  log_format: jsonl
+  log_events:
+    - "[START]"
+    - "[STEP]"
+    - "[END]"
+
+tasks:
+  - name: easy
+    trains: 3
+    blocked_edges: 1
+    max_steps: 20
+    difficulty: 0.2
+    grader:
+      metric: final_score
+      range: [0.0, 1.0]
+      goal: maximize
+      passing_threshold: 0.5
+
+  - name: medium
+    trains: 6
+    blocked_edges: 3
+    max_steps: 30
+    difficulty: 0.5
+    grader:
+      metric: final_score
+      range: [0.0, 1.0]
+      goal: maximize
+      passing_threshold: 0.4
+
+  - name: hard
+    trains: 8
+    blocked_edges: 3
+    max_steps: 40
+    difficulty: 0.9
+    grader:
+      metric: final_score
+      range: [0.0, 1.0]
+      goal: maximize
+      passing_threshold: 0.3
+
+  - name: dynamic_medium
+    trains: 8
+    blocked_edges: 1
+    dynamic_blocks: true
+    dynamic_block_interval: 3
+    max_steps: 50
+    difficulty: 0.7
+    grader:
+      metric: final_score
+      range: [0.0, 1.0]
+      goal: maximize
+      passing_threshold: 0.3
+
+  - name: extreme
+    trains: 10
+    blocked_edges: 2
+    dynamic_blocks: true
+    dynamic_block_interval: 4
+    max_steps: 60
+    difficulty: 1.0
+    grader:
+      metric: final_score
+      range: [0.0, 1.0]
+      goal: maximize
+      passing_threshold: 0.2
+
+  - name: vip_routing
+    trains: 6
+    blocked_edges: 2
+    max_steps: 30
+    difficulty: 0.6
+    description: "VIP trains (id 0, 3) incur 5x delay penalty"
+    grader:
+      metric: final_score
+      range: [0.0, 1.0]
+      goal: maximize
+      passing_threshold: 0.3
+
+graders:
+  - task: easy
+    metric: final_score
+    range: [0.0, 1.0]
+    goal: maximize
+    passing_threshold: 0.5
+  - task: medium
+    metric: final_score
+    range: [0.0, 1.0]
+    goal: maximize
+    passing_threshold: 0.4
+  - task: hard
+    metric: final_score
+    range: [0.0, 1.0]
+    goal: maximize
+    passing_threshold: 0.3
+  - task: dynamic_medium
+    metric: final_score
+    range: [0.0, 1.0]
+    goal: maximize
+    passing_threshold: 0.3
+  - task: extreme
+    metric: final_score
+    range: [0.0, 1.0]
+    goal: maximize
+    passing_threshold: 0.2
+  - task: vip_routing
+    metric: final_score
+    range: [0.0, 1.0]
+    goal: maximize
+    passing_threshold: 0.3
+
+action_space:
+  type: array
+  items:
+    type: object
+    properties:
+      train_id:
+        type: integer
+        description: ID of the train
+      action:
+        type: string
+        enum: [hold, reroute, noop]
+        description: The action to perform
+      new_path:
+        type: array
+        items:
+          type: string
+        description: List of node IDs for routing (used only if action=reroute)
+    required: [train_id, action]
+
+observation_space:
+  type: object
+  properties:
+    time_step:
+      type: integer
+    max_steps:
+      type: integer
+    task:
+      type: string
+    done:
+      type: boolean
+    total_delay:
+      type: integer
+    nodes:
+      type: array
+      items:
+        type: string
+    tracks:
+      type: array
+      items:
+        type: object
+        properties:
+          id:
+            type: string
+          blocked:
+            type: boolean
+          capacity:
+            type: integer
+        required: [id, blocked, capacity]
+    trains:
+      type: array
+      items:
+        type: object
+        properties:
+          id:
+            type: integer
+          position:
+            type: string
+          delay:
+            type: integer
+          status:
+            type: string
+            enum: [moving, held, blocked, arrived, stranded]
+        required: [id, position, delay, status]
+  required: [time_step, max_steps, task, done, total_delay, nodes, tracks, trains]
+
+reward:
+  step_reward_range: [-inf, 10.0]
+  final_score_range: [0.0, 1.0]
+
+scoring:
+  formula: "delay_score * arrival_ratio"
+  delay_score: "1.0 - calc_delay / max_tolerable_delay"
+  arrival_ratio: "arrived_count / max(n_trains, 1)"
+  vip_penalty_factor: 5.0
+  shaped_rewards:
+    movement: 0.1
+    arrival: 10.0
+    delay_penalty: -1.0
+    conflict_penalty: -2.0
+  range: [0.0, 1.0]
+
+tags:
+  - openenv
+  - transportation
+  - scheduling
+  - multi-agent
+  - conflict-resolution
+  - dynamic-environment
